@@ -64,6 +64,6 @@ int main() {
         material->mostrarDetalles();
         cout << "--------------------------" << endl;
     }
-
+    
     return 0;
 }
