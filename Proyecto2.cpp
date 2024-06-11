@@ -46,16 +46,16 @@ public:
 };
 
 int main() {
-    // Crear objetos de diferentes tipos de materiales
+    // Crea objetos de diferentes tipos de materiales
     Libro libro("Nombre del libro", "Autor del libro", 1001, "Genero");
     Revista revista("Nombre de la Revista", "Auyores de la Revista", 2002, 123); // codigo - numero de pagina
 
-    // Crear un arreglo de punteros a Material
+    // Crea un arreglo de punteros a Material
     Material* materiales[2];
     materiales[0] = &libro;
     materiales[1] = &revista;
 
-    // Mostrar detalles utilizando polimorfismo
+    // Muestra detalles utilizando polimorfismo
     for (const auto& material : materiales) {
         material->mostrarDetalles();
         std::cout << "--------------------------" << std::endl;
