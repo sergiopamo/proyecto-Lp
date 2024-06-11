@@ -69,7 +69,22 @@ public:
 };
 
 int main() {
-  // Crea objetos de diferentes tipos de materiales
+  // Crea objetos de diferentes tipos de materiales con sus nuevos atributos
   Libro libro("Nombre del libro", "Autor del libro", 1001, "Genero", 500); //Se agrega el número de páginas al crear el objeto libro
   Revista revista("Nombre de la Revista", "Autores de la Revista", 2002, "Genero", 12345, 6); //Se agregan el código de revista y el número de revista al crear el objeto revista
-  DVD dvd("Título del DVD", "Director del DVD", 3003, 120
+  DVD dvd("Título del DVD", "Director del DVD", 3003, 120, "Genero del DVD"); //Se agrega el código del dvd, la duración y el director al crear el objeto dvd
+
+  // Crea un arreglo llamado materiales, El tipo Material* indica que la variable materiales puede almacenar direcciones de memoria de objetos Material.
+  Material* materiales[3];
+  materiales[0] = &libro; //Asignación de punteros a objetos
+  materiales[1] = &revista;
+  materiales[2] = &dvd; //Arreglo de punteros a objetos de tipo Material y luego asigna punteros a objetos específicos de tipo Libro, Revista y DVD
+
+  // Muestra detalles utilizando polimorfismo
+  for (const auto& material : materiales) { //Este ciclo for recorre el arreglo materiales y llama al método mostrarDetalles() para cada objeto del arreglo. 
+    material->mostrarDetalles(); //Esto permite mostrar los detalles de cada material (libro, revista o DVD) de manera uniforme.
+    cout << "\n" << endl;
+  }
+
+  return 0;
+}
