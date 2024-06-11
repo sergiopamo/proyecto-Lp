@@ -19,6 +19,10 @@ public:
   }
 };
 
+//El operador & lo utilizamos para declarar referencias a objetos de tipo "Material" 
+//y para obtener las direcciones de memoria de estos objetos. Esto permite al arreglo materiales 
+//almacenar punteros a objetos de diferentes clases derivadas de Material.
+
 // Clase derivada Libro
 class Libro : public Material {
 private:
