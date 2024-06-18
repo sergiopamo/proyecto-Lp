@@ -19,10 +19,6 @@ public:
   }
 };
 
-//El operador & lo utilizamos para declarar referencias a objetos de tipo "Material" 
-//y para obtener las direcciones de memoria de estos objetos. Esto permite al arreglo materiales 
-//almacenar punteros a objetos de diferentes clases derivadas de Material.
-
 // Clase derivada Libro
 class Libro : public Material {
 private:
@@ -56,7 +52,7 @@ public:
   }
 };
 
-// Clase derivada DVD (sin cambios)
+// Clase derivada DVD
 class DVD : public Material {
 private:
   int duracion;
@@ -72,23 +68,64 @@ public:
   }
 };
 
-int main() {
-  // Crea objetos de diferentes tipos de materiales con sus nuevos atributos
-  Libro libro("Nombre del libro", "Autor del libro", 1001, "Genero", 500); //Se agrega el número de páginas al crear el objeto libro
-  Revista revista("Nombre de la Revista", "Autores de la Revista", 2002, "Genero", 12345, 6); //Se agregan el código de revista y el número de revista al crear el objeto revista
-  DVD dvd("Título del DVD", "Director del DVD", 3003, 120, "Genero del DVD"); //Se agrega el código del dvd, la duración y el director al crear el objeto dvd
+// Función para mostrar el menú de detalles de materiales
+void mostrarDetallesMateriales(Material* materiales[], int size) {
+  cout << "\n1.1. Detalles de libros" << endl;
+  cout << "1.2. Detalles de DVD's" << endl;
+  cout << "1.3. Detalles de revistas" << endl;
+  cout << "0. Volver al menú principal" << endl;
+  cout << "Seleccione una opción: ";
+  int opcion;
+  cin >> opcion;
 
-  // Crea un arreglo llamado materiales, El tipo Material* indica que la variable materiales puede almacenar direcciones de memoria de objetos Material.
-  Material* materiales[3];
-  materiales[0] = &libro; //Asignación de punteros a objetos
-  materiales[1] = &revista;
-  materiales[2] = &dvd; //Arreglo de punteros a objetos de tipo Material y luego asigna punteros a objetos específicos de tipo Libro, Revista y DVD
-
-  // Muestra detalles utilizando polimorfismo
-  for (const auto& material : materiales) { //Este ciclo for recorre el arreglo materiales y llama al método mostrarDetalles() para cada objeto del arreglo. 
-    material->mostrarDetalles(); //Esto permite mostrar los detalles de cada material (libro, revista o DVD) de manera uniforme.
-    cout << "\n" << endl;
+  if (opcion == 1) {
+    materiales[0]->mostrarDetalles();
+  } else if (opcion == 2) {
+    materiales[2]->mostrarDetalles();
+  } else if (opcion == 3) {
+    materiales[1]->mostrarDetalles();
+  } else if (opcion == 0) {
+    return;
+  } else {
+    cout << "Opción no válida. Intente nuevamente." << endl;
   }
+
+  mostrarDetallesMateriales(materiales, size);
+}
+
+void menuPrincipal(Material* materiales[], int size) {
+  cout << "\nMenu Principal" << endl;
+  cout << "1. Entrar al sistema de la biblioteca" << endl;
+  cout << "2. Salir" << endl;
+  cout << "Seleccione una opción: ";
+  int opcion;
+  cin >> opcion;
+
+  if (opcion == 1) {
+    mostrarDetallesMateriales(materiales, size);
+  } else if (opcion == 2) {
+    cout << "Saliendo del programa..." << endl;
+    return;
+  } else {
+    cout << "Opción no válida. Intente nuevamente." << endl;
+  }
+
+  menuPrincipal(materiales, size);
+}
+
+int main() {
+  // Crea objetos de diferentes tipos de materiales
+  Libro libro("Nombre del libro", "Autor del libro", 1001, "Genero", 500);
+  Revista revista("Nombre de la Revista", "Autores de la Revista", 2002, "Genero", 12345, 6);
+  DVD dvd("Título del DVD", "Director del DVD", 3003, 120, "Genero del DVD");
+
+  // Arreglo de punteros a objetos de tipo Material
+  Material* materiales[3];
+  materiales[0] = &libro;
+  materiales[1] = &revista;
+  materiales[2] = &dvd;
+
+  menuPrincipal(materiales, 3);
 
   return 0;
 }
