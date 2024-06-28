@@ -1,0 +1,254 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <cstdlib>
+
+using namespace std;
+
+// Clase base Material
+class Material {
+protected:
+    string titulo;
+    string autor;
+    int codigo;    
+public:
+    Material(const string& titulo, const string& autor, int codigo)
+        : titulo(titulo), autor(autor), codigo(codigo) {}
+
+    virtual void mostrarDetalles() const = 0; // Método virtual puro
+
+    int getCodigo() const {
+        return codigo;
+    }
+
+};
+
+// Clase derivada Libro
+class Libro : public Material {
+protected:
+    string genero;
+    int numPaginas;
+public:
+    Libro(const string& titulo, const string& autor, int codigo, const string& genero, int numPaginas)
+        : Material(titulo, autor, codigo), genero(genero), numPaginas(numPaginas) {}
+
+    void mostrarDetalles() const override {
+        cout << "Título: " << titulo << ", Autor: " << autor << ", Código: " << codigo << endl;
+        cout << "Género: " << genero << ", Número de páginas: " << numPaginas << endl;
+    }
+
+};
+
+// Clase derivada Revista
+class Revista : public Material {
+    protected:
+        string editorial;
+        int nro_revista;
+    public:
+        Revista(const string& titulo, const string& autor, int codigo, int nro_revista, const string& editorial)
+        : Material(titulo, autor, codigo), nro_revista(nro_revista), editorial(editorial){}
+    
+    void mostrarDetalles() const override {
+        cout << "Titulo: " << titulo << ", Autor: " << autor << ", codigo: "<< codigo << endl;
+        cout<< "nro de revista: " << nro_revista << ", Editorial: " << editorial << endl;
+    }
+};
+
+// Clase derivada DVD
+class DVD : public Material {
+protected:
+    int duracion;
+    string director;
+public:
+    DVD(const string& titulo, const string& autor, int codigo, int duracion, const string& director)
+        : Material(titulo, autor, codigo), duracion(duracion), director(director) {}
+
+    void mostrarDetalles() const override {
+        cout << "Título: " << titulo << ", Autor: " << autor << ", Código: " << codigo << endl;
+        cout << "Duración: " << duracion << " minutos" << ", Director: " << director << endl;
+    }
+
+};
+
+// Plantilla de clase Coleccion
+template <typename T>
+class Coleccion {
+private:
+    T** materiales;
+    int cantidad;
+    int capacidad;
+
+    void expandirCapacidad() {
+        capacidad *= 2;
+        T** nuevoArreglo = new T*[capacidad];
+        for (int i = 0; i < cantidad; ++i) {
+            nuevoArreglo[i] = materiales[i];
+        }
+        delete[] materiales;
+        materiales = nuevoArreglo;
+    }
+
+public:
+    Coleccion() : cantidad(0), capacidad(10) {
+        materiales = new T*[capacidad];
+    }
+
+    ~Coleccion() {
+        for (int i = 0; i < cantidad; ++i) {
+            delete materiales[i];
+        }
+        delete[] materiales;
+    }
+
+    void agregarMaterial(const T& material) {
+        if (cantidad == capacidad) expandirCapacidad();
+        materiales[cantidad++] = new T(material);
+    }
+
+    void eliminarMaterial(int codigo) {
+    for (int i = 0; i < cantidad; ++i) {
+        if (materiales[i]->getCodigo() == codigo) {
+            delete materiales[i];
+            for (int j = i; j < cantidad - 1; ++j) {
+                materiales[j] = materiales[j + 1];
+            }
+            --cantidad;
+            materiales[cantidad] = nullptr;
+            return;
+        }
+    }
+    cout << "Material con código " << codigo << " no encontrado." << endl;
+}
+
+    T* buscarMaterial(int codigo) {
+        for (int i = 0; i < cantidad; ++i) {
+            if (materiales[i]->getCodigo() == codigo) {
+                return materiales[i];
+            }
+        }
+        return nullptr;
+    }
+
+    void listarMateriales() const {
+        for (int i = 0; i < cantidad; ++i) {
+            materiales[i]->mostrarDetalles();
+            cout << "\n";
+        }
+    }
+};
+
+int main() {
+    int opcion;
+    Coleccion<Libro> coleccionLibros;
+    Coleccion<DVD> coleccionDVDs;
+    Coleccion<Revista> coleccionRevista;
+
+    do {
+        cout << "Menú de la biblioteca:" << endl;
+        cout << "1. Agregar libro" << endl;
+        cout << "2. Agregar DVD" << endl;
+        cout << "3. Agregar Revista" << endl;
+        cout << "4. Listar libros" << endl;
+        cout << "5. Listar DVDs" << endl;
+        cout << "6. Listar Revista" << endl;
+        cout << "7. Buscar material" << endl;
+        cout << "8. Eliminar material" << endl;
+        cout << "0. Salir" << endl;
+        cout << "Opcion: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1: {
+                string titulo, autor, genero;
+                int codigo, numPaginas;
+                cout << "Ingrese título del libro: ";
+                cin >> titulo;
+                cout << "Ingrese autor del libro: ";
+                cin >> autor;
+                cout << "Ingrese código del libro: ";
+                cin >> codigo;
+                cout << "Ingrese género del libro: ";
+                cin >> genero;
+                cout << "Ingrese número de páginas del libro: ";
+                cin >> numPaginas;
+                coleccionLibros.agregarMaterial(Libro(titulo, autor, codigo, genero, numPaginas));
+                break;
+            }
+            case 2: {
+                string titulo, director;
+                int codigo, duracion;
+                cout << "Ingrese título del DVD: ";
+                cin >> titulo;
+                cout << "Ingrese director del DVD: ";
+                cin >> director;
+                cout << "Ingrese código del DVD: ";
+                cin >> codigo;
+                cout << "Ingrese la duracion del DVD (en minutos): ";
+                cin >> duracion;
+                coleccionDVDs.agregarMaterial(DVD(titulo, "---", codigo, duracion, director));
+                break;
+            }
+            case 3: {
+                string titulo, autor, editorial;
+                int codigo, nro_revista;
+                cout << "Ingrese el titulo de la Revista: ";
+                cin >> titulo;
+                cout << "Ingrese el autor de la Revista: ";
+                cin >> autor;
+                cout << "Ingrese código de la Revista: ";
+                if (!(cin >> codigo)) {
+                    throw runtime_error("Error: El código debe ser un número entero.");
+                }
+                cout << "Ingrese la editorial: ";
+                cin >> editorial;
+                cout << "Ingrese el numero de la revista: ";
+                if (!(cin >> nro_revista) || nro_revista <= 0) {
+                    throw runtime_error("Error: El número de la revista debe ser un número entero positivo.");
+                }
+                coleccionRevista.agregarMaterial(Revista(titulo, autor, codigo, nro_revista, editorial));
+                break;
+            }
+            case 4:
+                cout << "Lista de libros:" << endl;
+                coleccionLibros.listarMateriales();
+                break;
+            case 5:
+                cout << "Lista de DVDs:" << endl;
+                coleccionDVDs.listarMateriales();
+                break;
+            case 6:
+                cout << "Lista de Revistas:" << endl;
+                coleccionRevista.listarMateriales();
+                break;
+            case 7: {
+                int codigoBuscar;
+                cout << "Ingrese código del material a buscar: ";
+                cin >> codigoBuscar;
+                Libro* libroEncontrado = coleccionLibros.buscarMaterial(codigoBuscar);
+                if (libroEncontrado) {
+                    libroEncontrado->mostrarDetalles();
+                } else {
+                    DVD* dvdEncontrado = coleccionDVDs.buscarMaterial(codigoBuscar);
+                    if (dvdEncontrado) {
+                        dvdEncontrado->mostrarDetalles();
+                    } else {
+                        cout << "Material no encontrado." << endl;
+                    }
+                }
+                break;
+            }
+            case 8: {
+                int codigoEliminar;
+                cout << "Ingrese código del material a eliminar: ";
+                cin >> codigoEliminar;
+                coleccionLibros.eliminarMaterial(codigoEliminar);
+                coleccionDVDs.eliminarMaterial(codigoEliminar);
+                break;
+            }
+            default:
+                if (opcion!= 0) {
+                    cout << "Opción inválida. Intente nuevamente." << endl;
+                }
+        }
+    } while (opcion!= 0);
+}
