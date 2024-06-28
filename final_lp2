@@ -1,0 +1,353 @@
+#include <iostream>
+#include <fstream> // Para manejo de archivos
+#include <stdexcept>
+#include <string>
+#include <vector>
+//uso de programacion orientada a objetos
+//manejo de excepcciones
+//plantilas
+//hacemos uso de librerias ios y f stream
+//uso de stl como vector
+// Clase base Material
+class Material {
+protected:
+    std::string titulo;
+    std::string autor;
+    int codigo;
+
+public:
+    Material(const std::string& titulo, const std::string& autor, int codigo)
+        : titulo(titulo), autor(autor), codigo(codigo) {}
+
+    virtual void mostrarDetalles() const = 0; // Método virtual puro
+
+    int getCodigo() const {
+        return codigo;
+    }
+
+    // Método para obtener los detalles en forma de cadena
+    virtual std::string detallesComoString() const = 0;
+};
+
+// Clase derivada Libro
+class Libro : public Material {
+private:
+    std::string genero;
+    int numPaginas;
+
+public:
+    Libro(const std::string& titulo, const std::string& autor, int codigo, const std::string& genero, int numPaginas)
+        : Material(titulo, autor, codigo), genero(genero), numPaginas(numPaginas) {}
+
+    void mostrarDetalles() const override {
+        std::cout << "Título: " << titulo << ", Autor: " << autor << ", Código: " << codigo << std::endl;
+        std::cout << "Género: " << genero << ", Número de páginas: " << numPaginas << std::endl;
+    }
+
+    std::string detallesComoString() const override {
+        return "Libro: Título: " + titulo + ", Autor: " + autor + ", Código: " + std::to_string(codigo) +
+               ", Género: " + genero + ", Número de páginas: " + std::to_string(numPaginas) + "\n";
+    }
+};
+
+// Clase derivada Revista
+class Revista : public Material {
+private:
+    std::string editorial;
+    int nro_revista;
+
+public:
+    Revista(const std::string& titulo, const std::string& autor, int codigo, int nro_revista, const std::string& editorial)
+        : Material(titulo, autor, codigo), nro_revista(nro_revista), editorial(editorial) {}
+
+    void mostrarDetalles() const override {
+        std::cout << "Título: " << titulo << ", Autor: " << autor << ", Código: " << codigo << std::endl;
+        std::cout << "Número de revista: " << nro_revista << ", Editorial: " << editorial << std::endl;
+    }
+
+    std::string detallesComoString() const override {
+        return "Revista: Título: " + titulo + ", Autor: " + autor + ", Código: " + std::to_string(codigo) +
+               ", Número de revista: " + std::to_string(nro_revista) + ", Editorial: " + editorial + "\n";
+    }
+};
+
+// Clase derivada DVD
+class DVD : public Material {
+private:
+    int duracion;
+    std::string director;
+
+public:
+    DVD(const std::string& titulo, const std::string& autor, int codigo, int duracion, const std::string& director)
+        : Material(titulo, autor, codigo), duracion(duracion), director(director) {}
+
+    void mostrarDetalles() const override {
+        std::cout << "Título: " << titulo << ", Autor: " << autor << ", Código: " << codigo << std::endl;
+        std::cout << "Duración: " << duracion << " minutos" << ", Director: " << director << std::endl;
+    }
+
+    std::string detallesComoString() const override {
+        return "DVD: Título: " + titulo + ", Autor: " + autor + ", Código: " + std::to_string(codigo) +
+               ", Duración: " + std::to_string(duracion) + " minutos, Director: " + director + "\n";
+    }
+};
+
+//Esto es para validar si una cadena es un número entero positivo
+bool esNumeroEnteroPositivo(const std::string& str) {
+    if (str.empty() || str.find_first_not_of("0123456789") != std::string::npos) {
+        return false; // Si contiene caracteres que no son dígitos
+    }
+    // También se puede verificar si es un número entero positivo usando stoi()
+    // que convierte la secuencia de caracteres de str en un valor de tipo int y devuelve el valor
+    try {
+        int valor = std::stoi(str);
+        return valor > 0; // Es un numero entero positivo
+    } catch (...) {
+        return false; // No se pudo convertir a entero
+    }
+}
+
+// Esto es para validar que el codigo tenga como maximo 6 dígitos
+bool tieneMaximoDigitos(const std::string& str, int maxDigitos) {
+    return str.size() <= maxDigitos && esNumeroEnteroPositivo(str);
+}
+
+// Plantilla de clase Coleccion
+template <typename T>
+class Coleccion {
+private:
+    std::vector<T*> materiales;
+
+public:
+    Coleccion() {}
+    ~Coleccion() {
+        for (auto& material : materiales) {
+            delete material;
+        }
+    }
+
+    void agregarMaterial(const T& material) {
+        materiales.push_back(new T(material));
+    }
+
+    void eliminarMaterial(int EliminarCodigo) {
+        for (auto it = materiales.begin(); it != materiales.end(); ++it) {
+            if ((*it)->getCodigo() == EliminarCodigo) {
+                delete *it;
+                materiales.erase(it);
+                return;
+            }
+        }
+        throw std::runtime_error("Material con código " + std::to_string(EliminarCodigo) + " no encontrado.");
+    }
+
+    T* buscarMaterial(int codigo) {
+        for (auto& material : materiales) {
+            if (material->getCodigo() == codigo) {
+                return material;
+            }
+        }
+        return nullptr;
+    }
+
+    void listarMateriales() const {
+        for (auto& material : materiales) {
+            material->mostrarDetalles();
+            std::cout << std::endl;
+        }
+    }
+
+    // Función para obtener todos los detalles como cadena de texto
+    std::string obtenerDetallesComoString() const {
+        std::string detalles;
+        for (auto& material : materiales) {
+            detalles += material->detallesComoString();
+        }
+        return detalles;
+    }
+};
+
+// Función para guardar los detalles en un archivo de texto
+void guardarEnArchivo(const std::string& nombreArchivo, const std::string& contenido) {
+    std::ofstream archivo(nombreArchivo);
+    if (archivo.is_open()) {
+        archivo << contenido;
+        archivo.close();
+        std::cout << "Se ha generado el archivo '" << nombreArchivo << "' correctamente." << std::endl;
+    } else {
+        throw std::runtime_error("No se pudo abrir el archivo '" + nombreArchivo + "' para escritura.");
+    }
+}
+
+int main() {
+    int opcion;
+    Coleccion<Libro> coleccionLibros;
+    Coleccion<DVD> coleccionDVDs;
+    Coleccion<Revista> coleccionRevistas;
+
+    try {
+        do {
+            std::cout << "Menú de la biblioteca:" << std::endl;
+            std::cout << "1. Agregar libro" << std::endl;
+            std::cout << "2. Agregar DVD" << std::endl;
+            std::cout << "3. Agregar Revista" << std::endl;
+            std::cout << "4. Listar libros" << std::endl;
+            std::cout << "5. Listar DVDs" << std::endl;
+            std::cout << "6. Listar Revistas" << std::endl;
+            std::cout << "7. Buscar material" << std::endl;
+            std::cout << "8. Eliminar material" << std::endl;
+            std::cout << "9. Generar archivo del inventario de la biblioteca" << std::endl;
+            std::cout << "0. Salir" << std::endl;
+            std::cout << "Opción: ";
+            std::cin >> opcion;
+
+            switch (opcion) {
+                case 1: {
+                    std::string titulo, autor, genero, codigoStr, numPaginasStr;
+                    int codigo, numPaginas;
+                    std::cout << "Ingrese título del libro: ";
+                    std::cin >> titulo;
+                    std::cout << "Ingrese autor del libro: ";
+                    std::cin >> autor;
+                    do {
+                        std::cout << "Ingrese código del libro (máximo 6 dígitos): ";
+                        std::cin >> codigoStr;
+                    } while (!tieneMaximoDigitos(codigoStr, 6));
+                    codigo = std::stoi(codigoStr);
+                    std::cout << "Ingrese género del libro: ";
+                    std::cin >> genero;
+                    std::cout << "Ingrese número de páginas del libro: ";
+                    std::cin >> numPaginasStr;
+                    if (!esNumeroEnteroPositivo(numPaginasStr)) {
+                        throw std::runtime_error("Error: El número de páginas debe ser un entero positivo.");
+                    }
+                    numPaginas = std::stoi(numPaginasStr);
+                    std::cout << "Se ha agregado el libro correctamente, regresando al menu de selección ";
+                    std::cout << "||||||||||||||||||||||";
+                    coleccionLibros.agregarMaterial(Libro(titulo, autor, codigo, genero, numPaginas));
+                    break;
+                }
+                case 2: {
+                    std::string titulo, director, codigoStr, duracionStr;
+                    int codigo, duracion;
+                    std::cout << "Ingrese título del DVD: ";
+                    std::cin >> titulo;
+                    std::cout << "Ingrese director del DVD: ";
+                    std::cin >> director;
+                    do {
+                        std::cout << "Ingrese código del DVD (máximo 6 dígitos): ";
+                        std::cin >> codigoStr;
+                    } while (!tieneMaximoDigitos(codigoStr, 6));
+                    codigo = std::stoi(codigoStr);
+                    std::cout << "Ingrese la duración del DVD (en minutos): ";
+                    std::cin >> duracionStr;
+                    if (!esNumeroEnteroPositivo(duracionStr)) {
+                        throw std::runtime_error("Error: La duración debe ser un entero positivo.");
+                    }
+                    duracion = std::stoi(duracionStr);
+                    std::cout << "Se ha agregado el DVD correctamente, regresando al menu de selección";
+                    std::cout << "||||||||||||||||||||||";
+                    coleccionDVDs.agregarMaterial(DVD(titulo, "---", codigo, duracion, director));
+                    break;
+                }
+                case 3: {
+                    std::string titulo, autor, editorial, codigoStr, nro_revistaStr;
+                    int codigo, nro_revista;
+                    std::cout << "Ingrese el título de la Revista: ";
+                    std::cin >> titulo;
+                    std::cout << "Ingrese el autor de la Revista: ";
+                    std::cin >> autor;
+                    do {
+                        std::cout << "Ingrese código de la Revista (máximo 6 dígitos): ";
+                        std::cin >> codigoStr;
+                    } while (!tieneMaximoDigitos(codigoStr, 6));
+                    codigo = std::stoi(codigoStr);
+                    std::cout << "Ingrese la editorial: ";
+                    std::cin >> editorial;
+                    std::cout << "Ingrese el número de la revista: ";
+                    std::cin >> nro_revistaStr;
+                    if (!esNumeroEnteroPositivo(nro_revistaStr)) {
+                        throw std::runtime_error("Error: El número de la revista debe ser un entero positivo.");
+                    }
+                    nro_revista = std::stoi(nro_revistaStr);
+                    std::cout << "Se ha agregado la revista correctamente, regresando al menu de selección";
+                    std::cout << "||||||||||||||||||||||";
+                    coleccionRevistas.agregarMaterial(Revista(titulo, autor, codigo, nro_revista, editorial));
+                    break;
+                }
+                case 4:
+                    std::cout << "Lista de libros:" << std::endl;
+                    coleccionLibros.listarMateriales();
+                    break;
+                case 5:
+                    std::cout << "Lista de DVDs:" << std::endl;
+                    coleccionDVDs.listarMateriales();
+                    break;
+                case 6:
+                    std::cout << "Lista de Revistas:" << std::endl;
+                    coleccionRevistas.listarMateriales();
+                    break;
+                case 7: {
+                    int codigoBuscar;
+                    std::cout << "Ingrese código del material a buscar: ";
+                    std::cin >> codigoBuscar;
+                    Libro* libroEncontrado = coleccionLibros.buscarMaterial(codigoBuscar);
+                    if (libroEncontrado) {
+                        libroEncontrado->mostrarDetalles();
+                    } else {
+                        DVD* dvdEncontrado = coleccionDVDs.buscarMaterial(codigoBuscar);
+                        if (dvdEncontrado) {
+                            dvdEncontrado->mostrarDetalles();
+                        } else {
+                            Revista* revistaEncontrada = coleccionRevistas.buscarMaterial(codigoBuscar);
+                            if (revistaEncontrada) {
+                                revistaEncontrada->mostrarDetalles();
+                            } else {
+                                std::cout << "Material no encontrado." << std::endl;
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 8: {
+                    int EliminarCodigo;
+                    std::cout << "Ingrese código del material a eliminar: ";
+                    std::cin >> EliminarCodigo;
+                    coleccionLibros.eliminarMaterial(EliminarCodigo);
+                    coleccionDVDs.eliminarMaterial(EliminarCodigo);
+                    coleccionRevistas.eliminarMaterial(EliminarCodigo);
+                    break;
+                }
+                case 9: {
+                    try {
+                        std::string nombreArchivo;
+                        std::cout << "Ingrese el nombre del archivo de texto (sin extensión .txt): ";
+                        std::cin >> nombreArchivo;
+                        std::string contenido = "Detalles de la biblioteca:\n\n";
+                        contenido += "Libros:\n";
+                        contenido += coleccionLibros.obtenerDetallesComoString();
+                        contenido += "\nDVDs:\n";
+                        contenido += coleccionDVDs.obtenerDetallesComoString();
+                        contenido += "\nRevistas:\n";
+                        contenido += coleccionRevistas.obtenerDetallesComoString();
+
+                        guardarEnArchivo(nombreArchivo + ".txt", contenido);
+                    } catch (const std::exception& e) {
+                        std::cerr << "Error al generar el archivo: " << e.what() << std::endl;
+                    }
+                    break;
+                }
+                default:
+                    if (opcion != 0) {
+                        std::cout << "Opción inválida. Intente nuevamente." << std::endl;
+                    }
+            }
+        } while (opcion != 0);
+    //si ocurre un problema al momento de eliminar un material que no exista
+    //mandando mensaje de que algo salio mal o error
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+
+    return 0;
+}
